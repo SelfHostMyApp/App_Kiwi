@@ -6,8 +6,13 @@ services:
     restart: always
     image: pub.kiwitcms.eu/kiwitcms/kiwi:${KIWI_VERSION:-latest}
     ports:
-      - ${KIWI_PORT:-8080}:8080
+      - ${KIWI_PORT:-1022}:8080
       - ${KIWI_SSL_PORT:-8443}:8443
+    networks:
+      core:
+        ipv4_address: 172.20.0.22
+      internal:
+
     volumes:
       - ~/volumes/kiwi/uploads:/Kiwi/uploads:Z
     environment:
