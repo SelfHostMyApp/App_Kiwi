@@ -21,12 +21,9 @@ services:
       internal:
 
     volumes:
-      - ~/volumes/kiwi/uploads:/Kiwi/uploads:Z
+      - ./volumes/kiwi/uploads:/Kiwi/uploads:Z
       - ./services/kiwi/entrypoint.sh:/custom-entrypoint.sh:ro
-    networks:
-      core:
-        ipv4_address: 172.20.0.63
-      internal:
+
     environment:
       # Database configuration
       KIWI_DB_HOST: maria-db
@@ -61,4 +58,4 @@ services:
       - "traefik.http.middlewares.kiwi-headers.headers.customrequestheaders.X-Forwarded-For=127.0.0.1"
       - "traefik.http.middlewares.kiwi-headers.headers.customrequestheaders.X-Forwarded-Server=${KIWI_SUBDOMAIN}.${ROOT_DOMAIN}"
       - "traefik.http.middlewares.kiwi-headers.headers.customrequestheaders.X-Real-IP=127.0.0.1"
-    entrypoint: [ "/bin/bash", "/custom-entrypoint.sh" ]
+    entrypoint: ["/bin/bash", "/custom-entrypoint.sh"]
