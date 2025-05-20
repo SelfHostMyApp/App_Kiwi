@@ -22,6 +22,7 @@ services:
 
     volumes:
       - ./volumes/kiwi/uploads:/Kiwi/uploads:Z
+      - ./volumes/kiwi/static:/Kiwi/static
       - ./services/kiwi/entrypoint.sh:/custom-entrypoint.sh:ro
 
     environment:
@@ -40,6 +41,7 @@ services:
       SSL_ENABLED: "false"
       UWSGI_PROTOCOL: "http"
       NGINX_ENABLED: "false"
+      KIWI_USE_UPSTREAM_HTTPS_PROXY: "true"
       # Optional: Debugging (set to "false" in production)
       DEBUG: "true"
     cap_drop:
