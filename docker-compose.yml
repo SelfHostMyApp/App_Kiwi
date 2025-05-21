@@ -9,7 +9,7 @@ services:
     <<: *basics
     container_name: kiwi
     depends_on:
-      - maria-db
+      - postgres
     restart: always
     image: pub.kiwitcms.eu/kiwitcms/kiwi:${KIWI_VERSION:-latest}
     ports:
@@ -20,17 +20,18 @@ services:
       internal:
     volumes:
       - ./volumes/kiwi/uploads:/Kiwi/uploads:Z
-
     environment:
       # Database configuration
-      KIWI_DB_HOST: maria-db
-      KIWI_DB_PORT: 3306
+      KIWI_DB_ENGINE: django.db.backends.postgresql
+      KIWI_DB_HOST: postgres
+      KIWI_DB_PORT: 5432
       KIWI_DB_NAME: ${KIWI_DB_NAME:-kiwi}
       KIWI_DB_USER: ${KIWI_DB_USER:-kiwi}
       KIWI_DB_PASSWORD: ${KIWI_PASSWORD}
       # Security settings
       SECRET_KEY: ${SECRET_KEY:-"a-random-string-for-development"}
-
+      KIWI_SITE_DOMAIN: ${KIWI_SUBDOMAIN}.${ROOT_DOMAIN}
+      KIWI_BASE_URL: https://${KIWI_SUBDOMAIN}.${ROOT_DOMAIN}
     cap_drop:
       - ALL
     labels:
