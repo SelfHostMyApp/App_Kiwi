@@ -13,17 +13,13 @@ services:
     restart: always
     image: pub.kiwitcms.eu/kiwitcms/kiwi:${KIWI_VERSION:-latest}
     ports:
-      - ${KIWI_PORT:-1022}:8080
-      - ${KIWI_SSL_PORT:-8443}:8443
+      - ${KIWI_PORT:-1022}:8443
     networks:
       core:
         ipv4_address: 172.20.0.22
       internal:
-
     volumes:
       - ./volumes/kiwi/uploads:/Kiwi/uploads:Z
-      - ./volumes/kiwi/static:/Kiwi/static
-      - ./services/kiwi/entrypoint.sh:/custom-entrypoint.sh:ro
 
     environment:
       # Database configuration
@@ -34,16 +30,7 @@ services:
       KIWI_DB_PASSWORD: ${KIWI_PASSWORD}
       # Security settings
       SECRET_KEY: ${SECRET_KEY:-"a-random-string-for-development"}
-      # Domain configuration
-      KIWI_SITE_DOMAIN: ${KIWI_SUBDOMAIN}.${ROOT_DOMAIN}
-      KIWI_FORCE_HTTPS: "false"
-      KIWI_DONT_ENFORCE_HTTPS: "true"
-      SSL_ENABLED: "false"
-      UWSGI_PROTOCOL: "http"
-      NGINX_ENABLED: "false"
-      KIWI_USE_UPSTREAM_HTTPS_PROXY: "true"
-      # Optional: Debugging (set to "false" in production)
-      DEBUG: "true"
+
     cap_drop:
       - ALL
     labels:
@@ -51,13 +38,10 @@ services:
       - "traefik.http.routers.kiwi.rule=Host(`${KIWI_SUBDOMAIN}.${ROOT_DOMAIN}`)"
       - "traefik.http.routers.kiwi.entrypoints=websecure"
       - "traefik.http.routers.kiwi.tls.certresolver=cloudflare"
-      - "traefik.http.services.kiwi.loadbalancer.server.port=8080"
-      - "traefik.http.routers.kiwi.middlewares=kiwi-headers,kiwi-auth,cloudflare-ipallowlist@file"
+      # Point to the HTTPS port instead of HTTP
+      - "traefik.http.services.kiwi.loadbalancer.server.port=8443"
+      # Tell Traefik to trust the self-signed certificate
+      - "traefik.http.services.kiwi.loadbalancer.server.scheme=https"
+      - "traefik.http.services.kiwi.loadbalancer.server.tls.insecure=true"
+      - "traefik.http.routers.kiwi.middlewares=kiwi-auth,cloudflare-ipallowlist@file"
       - "traefik.http.middlewares.kiwi-auth.basicauth.users=${KIWI_AUTH}"
-      - "traefik.http.middlewares.kiwi-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.kiwi-headers.headers.customrequestheaders.X-Forwarded-Host=${KIWI_SUBDOMAIN}.${ROOT_DOMAIN}"
-      - "traefik.http.middlewares.kiwi-headers.headers.customrequestheaders.X-Forwarded-Port=443"
-      - "traefik.http.middlewares.kiwi-headers.headers.customrequestheaders.X-Forwarded-For=127.0.0.1"
-      - "traefik.http.middlewares.kiwi-headers.headers.customrequestheaders.X-Forwarded-Server=${KIWI_SUBDOMAIN}.${ROOT_DOMAIN}"
-      - "traefik.http.middlewares.kiwi-headers.headers.customrequestheaders.X-Real-IP=127.0.0.1"
-    entrypoint: ["/bin/bash", "/custom-entrypoint.sh"]
